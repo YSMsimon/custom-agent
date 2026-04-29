@@ -1,0 +1,24 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE IF NOT EXISTS llm_memory (
+    id            SERIAL PRIMARY KEY,
+    user_id       TEXT NOT NULL,
+    role          TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'tool')),
+    content       TEXT NOT NULL,
+    embedding     vector(768),
+    tool_call_id  TEXT,
+    created_at    TIMESTAMP DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_llm_memory_user_time
+    ON llm_memory (user_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_llm_memory_embedding
+    ON llm_memory USING hnsw (embedding vector_cosine_ops)
+    WHERE embedding IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id     TEXT PRIMARY KEY,
+    preferences JSONB DEFAULT '{}',
+    updated_at  TIMESTAMP DEFAULT now()
+);

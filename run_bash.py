@@ -8,6 +8,7 @@ _skill_manager = SkillManager(Path(__file__).parent / "skills")
 _skill_manager.load_skills()
 def run_bash(command:str)-> str:
     try:
+        print(f"Running command: {command}")
         result = subprocess.run(
             command,
             shell = True,
@@ -68,8 +69,7 @@ def run_sub_agent(prompt: str) -> str:
     from my_agent_loop import Agent
     print("Running sub-agent")
     subagent = Agent(config(), tools=tools)
-    history = [{'role':'user', 'content': prompt}]
-    return subagent.run(history)[-1].get('content')
+    return subagent.run(prompt)
 
 skill_tools = [
     {
