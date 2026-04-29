@@ -88,22 +88,33 @@ class Agent:
     def _execute(self, messages: List[Dict]) -> List[Dict]:
         response = self.client.chat(
             model=self.config.model,
-            messages= messages,
+            messages=messages,
             tools=self.tools,
+            stream=True
         )
-        print("Assistant> ",response.message.content)
-        self._save_turn({'role': 'assistant', 'content': response.message.content})
-        messages = messages + [{'role': 'assistant', 'content': response.message.content}]
 
-        if not response.message.tool_calls:
+        full_content = ''
+        tool_calls = None
+        for chunk in response:
+            if chunk.message.content:
+                full_content += chunk.message.content
+                print(chunk.message.content, end='', flush=True)
+            if chunk.message.tool_calls:
+                tool_calls = chunk.message.tool_calls
+        print()
+
+        self._save_turn({'role': 'assistant', 'content': full_content})
+        messages = messages + [{'role': 'assistant', 'content': full_content}]
+
+        if not tool_calls:
             return messages
 
-        for tool_call in response.message.tool_calls:
+        for tool_call in tool_calls:
             tool_call_id = getattr(tool_call, 'id', None)
             name = tool_call.function.name
             args = tool_call.function.arguments
             result = tool_handler[name](**args)
-            self._save_turn({'role': 'tool', 'content': response.message.content, 'tool_call_id': tool_call_id})
+            self._save_turn({'role': 'tool', 'content': result, 'tool_call_id': tool_call_id})
             messages.append({'role': 'tool', 'content': result, 'tool_call_id': tool_call_id})
             if name == 'to_do':
                 print("\n=== CURRENT TASK LIST ===")
@@ -122,6 +133,9 @@ if __name__ == '__main__':
             user_input = input("User> ")
             if user_input == "/help":
                 pass
+            if user_input == "/exit":
+                print("Exiting...")
+                break
             agent.run(user_input)
     except KeyboardInterrupt:
         print("\nExiting...")
