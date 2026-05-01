@@ -7,6 +7,13 @@ from pathlib import Path
 _skill_manager = SkillManager(Path(__file__).parent / "skills")
 _skill_manager.load_skills()
 def run_bash(command:str)-> str:
+    if 'rm' in command or 'sudo' in command:
+        while True:
+            user_input = input("Warning: Command contains 'rm' or 'sudo'. Are you sure you want to run this? (Y/N) ")
+            if user_input.lower() == 'y':
+                break
+            else:
+                return "Command not executed, cancelled by user."
     try:
         print(f"Running command: {command}")
         result = subprocess.run(

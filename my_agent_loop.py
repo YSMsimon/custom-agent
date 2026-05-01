@@ -114,13 +114,8 @@ class Agent:
             name = tool_call.function.name
             args = tool_call.function.arguments
             result = tool_handler[name](**args)
-            self._save_turn({'role': 'tool', 'content': result, 'tool_call_id': tool_call_id})
-            messages.append({'role': 'tool', 'content': result, 'tool_call_id': tool_call_id})
-            if name == 'to_do':
-                print("\n=== CURRENT TASK LIST ===")
-                print(result)
-                print("=========================\n")
-
+            self._save_turn({'role': 'tool', 'content': f"Name: {name}, Arguments: {args}, Result: {result}", 'tool_call_id': tool_call_id})
+            messages.append({'role': 'tool', 'content': f"Name: {name}, Arguments: {args}, Result: {result}", 'tool_call_id': tool_call_id})
         return self._execute(messages)
 
 
