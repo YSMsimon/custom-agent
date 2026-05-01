@@ -50,5 +50,7 @@ class ToDoManager:
         for idx, item in enumerate(items):
             if isinstance(item, dict):
                 items[idx] = PlanItem(**item)
-        return self.update(items)
+        result = self.update(items)
+        print(result)
+        return result
     

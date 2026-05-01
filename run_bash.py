@@ -3,6 +3,7 @@ from common.config import WORKDIR, config
 from to_do import PlanItem, ToDoManager
 from skill_manager import SkillManager
 from pathlib import Path
+from crawl import fetch_text, fetch_html, web_search
 
 _skill_manager = SkillManager(Path(__file__).parent / "skills")
 _skill_manager.load_skills()
@@ -231,7 +232,51 @@ tools = skill_tools + [{
             "required": ["items"]
         }
     }
-}]
+},
+{
+    "type": "function",
+    "function": {
+        "name": "fetch_text",
+        "description": "Fetch the visible plain text content of a webpage (HTML tags stripped)",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "The full URL to fetch"}
+            },
+            "required": ["url"]
+        }
+    }
+},
+{
+    "type": "function",
+    "function": {
+        "name": "fetch_html",
+        "description": "Fetch the raw HTML of a webpage",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "The full URL to fetch"}
+            },
+            "required": ["url"]
+        }
+    }
+},
+{
+    "type": "function",
+    "function": {
+        "name": "web_search",
+        "description": "Search the web using DuckDuckGo and return a list of results with title, url, and snippet",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "The search query"},
+                "max_results": {"type": "integer", "description": "Maximum number of results to return (default 5)"}
+            },
+            "required": ["query"]
+        }
+    }
+}
+]
 
 all_tools = tools + [{
     "type": "function",
@@ -261,4 +306,7 @@ tool_handler = {
     'preview_skill': preview_skill,
     'get_skill': get_skill,
     'run_sub_agent': run_sub_agent,
+    'fetch_text': fetch_text,
+    'fetch_html': fetch_html,
+    'web_search': web_search
 }
