@@ -11,6 +11,7 @@ class config:
         self.base_url = os.getenv('BASE_URL')
         self.model = os.getenv('MODEL')
         self.embedding_model = os.getenv('EMBEDDING_MODEL')
+        self.profile_model = os.getenv('PROFILE_MODEL')
         self.system_prompt = """\
 You are an AI agent. Use tools to act — prefer tools over prose.
 
