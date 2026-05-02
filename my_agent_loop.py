@@ -6,6 +6,7 @@ from to_do import ToDoManager
 from db import DB
 import json
 import re
+import sys
 
 
 class Agent:
@@ -20,7 +21,8 @@ class Agent:
 
     def get_embedding(self, text: str) -> list:
         response = self.client.embeddings(model=self.config.embedding_model, prompt=text)
-        return response.embedding
+        embedding = response.embedding
+        return embedding
 
     def _build_system_prompt(self) -> str:
         profile = self.db.get_user_profile(self.user_id)
@@ -73,7 +75,7 @@ class Agent:
     def _save_turn(self, new_messages: Dict):
         role = new_messages.get('role')
         content = new_messages.get('content')
-        embedding = self.get_embedding(content) if role in ('user', 'assistant') else None
+        embedding = self.get_embedding(content)
         tool_call_id = new_messages.get('tool_call_id')
         self.db.add_message(self.user_id, role, content, embedding, tool_call_id)
         
@@ -82,8 +84,11 @@ class Agent:
     def run(self, user_message: str) -> str:
         self._system_prompt = self._build_system_prompt()
         messages = self._build_messages(user_message)
-        self._execute(messages)
-        return
+        final_messages = self._execute(messages)
+        for msg in reversed(final_messages):
+            if isinstance(msg, dict) and msg.get('role') == 'assistant':
+                return msg.get('content', '')
+        return ''
 
     def _execute(self, messages: List[Dict]) -> List[Dict]:
         response = self.client.chat(
@@ -98,10 +103,10 @@ class Agent:
         for chunk in response:
             if chunk.message.content:
                 full_content += chunk.message.content
-                print(chunk.message.content, end='', flush=True)
+                print(chunk.message.content, end='', flush=True, file=sys.stderr)
             if chunk.message.tool_calls:
                 tool_calls = chunk.message.tool_calls
-        print()
+        print(file=sys.stderr)
 
         self._save_turn({'role': 'assistant', 'content': full_content})
         messages = messages + [{'role': 'assistant', 'content': full_content}]
