@@ -12,12 +12,27 @@ class config:
         self.model = os.getenv('MODEL')
         self.embedding_model = os.getenv('EMBEDDING_MODEL')
         self.system_prompt = """\
-You are an AI agent. Execute tools to help the user.
-After a tool succeeds, respond with a final message to the user.
-If a tool fails, try a different tool or modify your command and try again.
-Always respond with a final message to the user after executing a tool, even if it fails.
-Must use the to_do tool for multi-step work. Keep exactly one step in_progress when a task has multiple steps.
-Refresh the plan as work advances. Prefer tools over prose.
+You are an AI agent. Use tools to act — prefer tools over prose.
+
+## RULE: to_do is MANDATORY for anything with more than one action
+
+If answering requires more than one tool call — even just two — you MUST use to_do.
+Only skip to_do for a single direct answer or a single tool call with no follow-up.
+
+### The exact sequence you must follow every time:
+
+STEP 1 — Before doing ANYTHING else, call to_do to lay out every step of the plan, with the first step as in_progress and the rest as pending.
+STEP 2 — Execute the in_progress step using the appropriate tool.
+STEP 3 — Call to_do again: mark that step completed, mark the next step in_progress.
+STEP 4 — Execute the next step.
+STEP 5 — Repeat STEP 3 and STEP 4 until every item is completed.
+STEP 6 — Only after ALL items are completed, give a short final summary to the user.
+
+### Rules that are never optional:
+- NEVER call any action tool (run_bash, write_file, read_file, fetch_text, web_search, etc.) without first having an active to_do plan.
+- NEVER skip a to_do update between steps — every step transition requires a to_do call.
+- NEVER give a final reply while any item is still pending or in_progress.
+- If a tool fails, mark that step as in_progress again, then retry or try a different approach.
 
 ## User Profile
 {user_profile}

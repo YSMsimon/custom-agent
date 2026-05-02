@@ -29,7 +29,7 @@ class DB:
             )
         self.conn.commit()
 
-    def get_recent_history(self, user_id: str, limit: int = 10) -> tuple:
+    def get_recent_history(self, user_id: str, limit: int = 20) -> tuple:
         """Returns (messages, ids). Messages are in chronological order and
         include all roles; tool messages carry tool_call_id."""
         self.cursor.execute(

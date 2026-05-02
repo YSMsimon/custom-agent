@@ -31,7 +31,7 @@ class Agent:
 
     def _build_messages(self, user_message: str) -> List[Dict]:
         
-        history, recent_ids = self.db.get_recent_history(self.user_id, limit=10)
+        history, recent_ids = self.db.get_recent_history(self.user_id, limit=10000)
 
         embedding = self.get_embedding(user_message)
         
@@ -40,7 +40,7 @@ class Agent:
         )
 
         messages = list(history)
-        
+
         """
         if memories:
             rag_lines = "\n".join(f"[{m['role']}]: {m['content']}" for m in memories)
@@ -93,7 +93,7 @@ class Agent:
     def _execute(self, messages: List[Dict]) -> List[Dict]:
         response = self.client.chat(
             model=self.config.model,
-            messages=messages,
+            messages=[{'role': 'system', 'content': self._system_prompt}] + messages,
             tools=self.tools,
             stream=True
         )
