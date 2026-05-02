@@ -1,5 +1,3 @@
-# Custom AI Agent
-
 [中文版](README_CN.md)
 
 > **This project is actively in development. Expect bugs, incomplete features, and rough edges. Error handling and try/catch coverage will be improved over time.**
